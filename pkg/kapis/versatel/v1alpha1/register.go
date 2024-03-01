@@ -4,9 +4,10 @@ import (
 	"net/http"
 
 	"io/ioutil"
-	log "github.com/sirupsen/logrus"
+
 	"github.com/emicklei/go-restful"
 	restfulspec "github.com/emicklei/go-restful-openapi"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"kubesphere.io/kubesphere/pkg/apiserver/query"
 
@@ -19,13 +20,14 @@ const (
 )
 
 var GroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1alpha1"}
-func GetLinstorIP() (string) {
 
-    ip, err := ioutil.ReadFile("/etc/linstorip/linstorip")
-    if err != nil {
-        log.Fatal(err)
-    }
-    return string(ip)
+func GetLinstorIP() string {
+
+	ip, err := ioutil.ReadFile("/etc/linstorip/linstorip")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(ip)
 }
 
 func AddToContainer(container *restful.Container, ip string) error {
@@ -61,6 +63,13 @@ func AddToContainer(container *restful.Container, ip string) error {
 		Returns(http.StatusOK, api.StatusOK, MessageOP{}).
 		Metadata(restfulspec.KeyOpenAPITags, tagsLinstor).
 		Reads(LinstorNode{}))
+
+	webservice.Route(webservice.POST("/linstor/modifynode").
+		To(handler.ModifyNode).
+		Doc("modify a linstor node.").
+		Returns(http.StatusOK, api.StatusOK, MessageOP{}).
+		Metadata(restfulspec.KeyOpenAPITags, tagsLinstor).
+		Reads(LinstorModifyNode{}))
 
 	webservice.Route(webservice.DELETE("/linstor/node/{node}").
 		To(handler.DeleteNode).
@@ -164,7 +173,6 @@ func AddToContainer(container *restful.Container, ip string) error {
 		Returns(http.StatusOK, api.StatusOK, MessageOP{}).
 		Metadata(restfulspec.KeyOpenAPITags, tagsLinstor))
 
-
 	webservice.Route(webservice.GET("/lvm/device").
 		To(handler.handleListLvmDevices).
 		Metadata(restfulspec.KeyOpenAPITags, tagsLinstor).
@@ -209,7 +217,6 @@ func AddToContainer(container *restful.Container, ip string) error {
 		//Param(webservice.QueryParameter(query.ParameterOrderBy, "sort parameters, e.g. orderBy=createTime")).
 		Returns(http.StatusOK, api.StatusOK, MessageList{}))
 
-
 	webservice.Route(webservice.POST("/lvm/pv").
 		To(handler.CreateResourceLvmPV).
 		Doc("Create pvs.").
@@ -236,7 +243,7 @@ func AddToContainer(container *restful.Container, ip string) error {
 		Doc("Create pvs.").
 		Returns(http.StatusOK, api.StatusOK, MessageOP{}).
 		Metadata(restfulspec.KeyOpenAPITags, tagsLinstor).
-		Reads(LvmLV{}))		
+		Reads(LvmLV{}))
 	//webservice.Route(webservice.PUT("/linstornode/{node}").
 	//	To(handler.UpdateNode).
 	//	Doc("Update node").
