@@ -3,6 +3,7 @@ package linstor
 import (
 	"context"
 	"fmt"
+	"net"
 
 	"github.com/LINBIT/golinstor/client"
 	log "github.com/sirupsen/logrus"
@@ -48,7 +49,12 @@ func DescribeNode(ctx context.Context, c *client.Client, nodename string) error 
 }
 
 func CreateNode(ctx context.Context, c *client.Client, name, ip, nodeType string) error {
-	netInterfaces := []client.NetInterface{client.NetInterface{Name: "default", Address: ip, SatellitePort: 3366, SatelliteEncryptionType: "Plain"}}
+	// 将ip字符串转换为net.IP
+	ipAddr := net.ParseIP(ip)
+	if ipAddr == nil {
+		return fmt.Errorf("无效的IP地址：%s", ip)
+	}
+	netInterfaces := []client.NetInterface{client.NetInterface{Name: "default", Address: ipAddr, SatellitePort: 3366, SatelliteEncryptionType: "Plain"}}
 	node := client.Node{Name: name, Type: nodeType, NetInterfaces: netInterfaces}
 	err := c.Nodes.Create(ctx, node)
 	return err
