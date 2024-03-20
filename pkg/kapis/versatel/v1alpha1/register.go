@@ -64,7 +64,7 @@ func AddToContainer(container *restful.Container, ip string) error {
 		Metadata(restfulspec.KeyOpenAPITags, tagsLinstor).
 		Reads(LinstorNode{}))
 
-	webservice.Route(webservice.POST("/linstor/modifynode").
+	webservice.Route(webservice.POST("/linstor/node/modifynode").
 		To(handler.ModifyNode).
 		Doc("modify a linstor node.").
 		Returns(http.StatusOK, api.StatusOK, MessageOP{}).
