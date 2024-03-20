@@ -145,10 +145,26 @@ func (h *handler) ModifyNode(req *restful.Request, resp *restful.Response) {
 		return
 	}
 	client, ctx := linstorv1alpha1.GetClient(h.ControllerIP)
-	err = linstorv1alpha1.ModifyNode(ctx, client, node.Name, node.NodeType)
+	data := ""
+	data, err = linstorv1alpha1.ModifyNode(ctx, client, node.Name, node.NodeType)
+	// if err != nil {
+	// 	resp.WriteAsJson(err)
+	// }
+	// 构建响应 map
+	response := make(map[string]interface{})
+
 	if err != nil {
-		resp.WriteAsJson(err)
+		// 失败情况
+		response["success"] = false
+		response["message"] = fmt.Sprintf("Failed to modify node %s: %v", node.Name, err)
+	} else {
+		// 成功情况
+		response["success"] = true
+		response["message"] = fmt.Sprintf(data)
 	}
+
+	// 将 map 序列化为 JSON 并发送给客户端
+	resp.WriteAsJson(response)
 }
 
 func (h *handler) DeleteNode(req *restful.Request, resp *restful.Response) {
